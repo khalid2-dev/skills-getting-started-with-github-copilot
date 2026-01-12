@@ -18,14 +18,42 @@ document.addEventListener("DOMContentLoaded", () => {
         const activityCard = document.createElement("div");
         activityCard.className = "activity-card";
 
-        const spotsLeft = details.max_participants - details.participants.length;
+        const spotsLeft = details.max_participants - (details.participants?.length || 0);
 
         activityCard.innerHTML = `
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+
+          <div class="participants-section">
+            <h5>Participants</h5>
+            <ul class="participants-list" aria-live="polite"></ul>
+          </div>
         `;
+
+        // Populate participants list
+        const participantsList = activityCard.querySelector(".participants-list");
+        const participants = Array.isArray(details.participants) ? details.participants : [];
+        if (participants.length === 0) {
+          const emptyLi = document.createElement("li");
+          emptyLi.className = "participants-empty";
+          emptyLi.textContent = "No participants yet";
+          participantsList.appendChild(emptyLi);
+        } else {
+          participants.forEach((p) => {
+            const li = document.createElement("li");
+            // support either string entries (email/name) or objects with a name/email
+            if (typeof p === "string") {
+              li.textContent = p;
+            } else if (p && typeof p === "object") {
+              li.textContent = p.name || p.email || JSON.stringify(p);
+            } else {
+              li.textContent = String(p);
+            }
+            participantsList.appendChild(li);
+          });
+        }
 
         activitiesList.appendChild(activityCard);
 
